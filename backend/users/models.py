@@ -16,7 +16,8 @@ class ProjectUser(AbstractUser):
         upload_to='avatars/', null=True, default='default.png')
 
     class Meta:
-        verbose_name = 'Пользовтель'
+        ordering = ('id',)
+        verbose_name = 'Пользовaтель'
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
@@ -37,3 +38,6 @@ class Follow(models.Model):
             UniqueConstraint(fields=('user', 'following'),
                              name='unique_followings'),
         )
+        ordering = ('-id',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

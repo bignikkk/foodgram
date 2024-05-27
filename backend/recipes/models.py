@@ -58,7 +58,7 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, blank=False, null=False)
+        Recipe, on_delete=models.CASCADE, blank=False, null=False, related_name='recipeingredient')
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, blank=False, null=False)
     amount = models.DecimalField(
@@ -76,7 +76,7 @@ class RecipeIngredient(models.Model):
 class ShoppingListItem(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='shopping_list_items')
-    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE)
+    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE, related_name='shopping_list_items')
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -94,7 +94,7 @@ class Favorite(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='favorites')
     favorite_recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='favorited_by')
+        Recipe, on_delete=models.CASCADE, related_name='favorites')
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
