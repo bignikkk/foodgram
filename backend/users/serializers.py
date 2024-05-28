@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from drf_extra_fields.fields import Base64ImageField
@@ -6,8 +5,7 @@ from drf_extra_fields.fields import Base64ImageField
 from .models import User, Follow
 
 
-
-class ProfileSerializer(serializers.ModelSerializer):
+class ProjectUserSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=False, allow_null=True)
     is_subscribed = serializers.SerializerMethodField()
 
@@ -15,7 +13,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed', 'avatar')
-        read_only_fields = ("is_subscribed",)
+        read_only_fields = ('is_subscribed',)
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request', None)
