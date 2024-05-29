@@ -99,7 +99,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 obj.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'errors': 'Рецепт уже был удален!'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], url_path='download_shopping_cart')
     def download_shopping_cart(self, request):
         user = request.user
@@ -130,5 +130,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename={user.username}_shopping_list.txt'
 
         return response
-
-    
