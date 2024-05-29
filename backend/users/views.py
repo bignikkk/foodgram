@@ -65,13 +65,13 @@ class ProjectUserViewSet(DjoserUserViewSet):
 
     @action(
         detail=False,
-        methods=['patch', 'delete'],
+        methods=['put', 'delete'],
         permission_classes=[IsAuthenticated],
         url_path='me/avatar'
     )
     def avatar(self, request):
         user = request.user
-        if request.method == 'PATCH':
+        if request.method == 'PUT':
             avatar_data = request.data.get('avatar')
             if avatar_data:
                 format, imgstr = avatar_data.split(';base64,')

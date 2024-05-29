@@ -7,9 +7,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.timezone import now
 from django.db.models import Sum
 from django.http import HttpResponse
+import pyshorteners
 
 
-from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingListItem, RecipeIngredient
+from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingListItem, RecipeIngredient, ShortRecipeLink
 from users.pagination import ProjectPagination
 from .serializers import TagSerializer, IngredientSerializer, RecipeShowSerializer, RecipeCreateSerializer, RecipeShortSerializer
 from .permission import IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -130,3 +131,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename={user.username}_shopping_list.txt'
 
         return response
+    
+    @action(detail=True, methods=['get'], url_path='get-link')
+    def get_short_link(self, request, pk):
+        recipe = self.get_object()
+        try:
+            short_link = ShortRecipeLink.objects.get(recipe=recipe)
+        except ShortRecipeLink.DoesNotExist:
+            original_url = f"http://localhost:3000/api/recipes/{recipe.id}/"
+            s = pyshorteners.Shortener()
+            short_url = s.tinyurl.short(original_url)
+            short_link = ShortRecipeLink.objects.create(recipe=recipe, short_link=short_url)
+
+        return Response({"short-link": short_link.short_link}, status=status.HTTP_200_OK)
+
