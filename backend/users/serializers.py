@@ -4,6 +4,8 @@ from drf_extra_fields.fields import Base64ImageField
 
 from .models import User, Follow
 
+from djoser.serializers import UserCreateSerializer, UserSerializer
+
 
 class ProjectUserSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=False, allow_null=True)

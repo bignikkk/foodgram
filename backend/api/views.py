@@ -1,20 +1,22 @@
+import hashlib
+
 from rest_framework import viewsets, status
+
 from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils.timezone import now
 from django.db.models import Sum
 from django.http import HttpResponse
-import pyshorteners
 
 
 from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingListItem, RecipeIngredient, ShortRecipeLink
 from users.pagination import ProjectPagination
 from .serializers import TagSerializer, IngredientSerializer, RecipeShowSerializer, RecipeCreateSerializer, RecipeShortSerializer
 from .permission import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .filters import IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -31,11 +33,17 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
 
 
+def generate_shortlink(recipe_id):
+    # Генерируем короткую ссылку на основе ID рецепта
+    # Можно использовать хэширование, чтобы получить более уникальную ссылку
+    return hashlib.md5(str(recipe_id).encode()).hexdigest()[:8]
+
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = ProjectPagination
     filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -132,16 +140,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return response
     
-    @action(detail=True, methods=['get'], url_path='get-link')
-    def get_short_link(self, request, pk):
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def create_shortlink(self, request, pk=None):
         recipe = self.get_object()
-        try:
-            short_link = ShortRecipeLink.objects.get(recipe=recipe)
-        except ShortRecipeLink.DoesNotExist:
-            original_url = f"http://localhost:3000/api/recipes/{recipe.id}/"
-            s = pyshorteners.Shortener()
-            short_url = s.tinyurl.short(original_url)
-            short_link = ShortRecipeLink.objects.create(recipe=recipe, short_link=short_url)
+        shortlink = generate_shortlink(recipe.id)  # Функция генерации короткой ссылки
+        recipe.shortlink = shortlink
+        recipe.save()
+        return Response({'shortlink': shortlink}, status=status.HTTP_200_OK)
 
-        return Response({"short-link": short_link.short_link}, status=status.HTTP_200_OK)
-
+    
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny], url_path='get-link')
+    def get_shortlink(self, request, pk=None):
+        recipe = self.get_object()
+        if recipe.shortlink:
+            return Response({'shortlink': recipe.shortlink}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Shortlink not available'}, status=status.HTTP_404_NOT_FOUND)

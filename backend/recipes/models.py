@@ -37,7 +37,7 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='recipes', blank=False, null=False)
+        User, on_delete=models.CASCADE, related_name='recipes', null=True)
     name = models.CharField(max_length=254, blank=False, null=False)
     image = models.ImageField(upload_to='recipes/',
                               blank=False, null=False, default='default.png')
@@ -46,6 +46,7 @@ class Recipe(models.Model):
         Ingredient, through='RecipeIngredient', blank=False)
     tags = models.ManyToManyField(Tag, blank=False)
     cooking_time = models.PositiveIntegerField(blank=False, null=False)
+    shortlink = models.URLField(max_length=200, unique=True, blank=True, null=True)
 
     class Meta:
         ordering = ('-id',)
@@ -83,7 +84,7 @@ class ShortRecipeLink(models.Model):
 class ShoppingListItem(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='shopping_list_items')
-    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE, related_name='shopping_list_items')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='shopping_list_items')
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -113,4 +114,4 @@ class Favorite(models.Model):
         )
     
     def __str__(self):
-        return f'{self.user} добавил "{self.recipe}" в избранное'
+        return f'{self.user} добавил "{self.favorite_recipe}" в избранное'

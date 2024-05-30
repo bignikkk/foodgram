@@ -13,6 +13,7 @@ from .serializers import ProjectUserSerializer
 from .models import User, Follow
 from .pagination import ProjectPagination
 from api.serializers import FollowSerializer
+from recipes.models import Recipe
 
 
 class ProjectUserViewSet(DjoserUserViewSet):

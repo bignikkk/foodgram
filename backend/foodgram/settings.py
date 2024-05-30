@@ -1,11 +1,10 @@
 from pathlib import Path
 import os
 
-from users.permissions import CurrentUserOrAdminOrReadOnly
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+BASE_URL = 'http://localhost:3000'
 
 SECRET_KEY = 'django-insecure-ha4vf((o&nhtltw2qnq+-ejo%-@tmwvct5d^c8%0aqan8be3jy'
 
@@ -109,9 +108,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -128,5 +127,6 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+CSV_DATA_PATH = 'data/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
