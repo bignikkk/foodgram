@@ -1,19 +1,19 @@
-from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.core.files.base import ContentFile
 import base64
 
+from djoser.views import UserViewSet as DjoserUserViewSet
+
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
+from django.core.files.base import ContentFile
 
 from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import ProjectUserSerializer
 from .models import User, Follow
 from .pagination import ProjectPagination
 from api.serializers import FollowSerializer
-from recipes.models import Recipe
 
 
 class ProjectUserViewSet(DjoserUserViewSet):
@@ -41,7 +41,7 @@ class ProjectUserViewSet(DjoserUserViewSet):
 
         if request.method == 'POST':
             serializer = FollowSerializer(
-                author, data=request.data, context={"request": request})
+                author, data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, following=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -81,12 +81,15 @@ class ProjectUserViewSet(DjoserUserViewSet):
                     imgstr), name=f"{user.username}-avatar.{ext}")
                 user.avatar.save(
                     f"{user.username}-avatar.{ext}", avatar_data, save=True)
-                return Response({'avatar': user.avatar.url}, status=status.HTTP_200_OK)
+                return Response({'avatar': user.avatar.url},
+                                status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'No avatar data provided'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Картинка не предоставлена!'},
+                                status=status.HTTP_400_BAD_REQUEST)
         elif request.method == 'DELETE':
             if user.avatar:
                 user.avatar.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
-                return Response({'error': 'No avatar to delete'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Нет картинки для удаления!'},
+                                status=status.HTTP_400_BAD_REQUEST)

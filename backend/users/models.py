@@ -9,11 +9,29 @@ class ProjectUser(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     email = models.EmailField(
-        max_length=254, blank=False, null=False, unique=True, verbose_name='Электронная почта')
-    first_name = models.CharField(max_length=150, blank=False, null=False, verbose_name='Имя')
-    last_name = models.CharField(max_length=150, blank=False, null=False, verbose_name='Фамилия')
+        max_length=254,
+        blank=False,
+        null=False,
+        unique=True,
+        verbose_name='Электронная почта'
+    )
+    first_name = models.CharField(
+        max_length=150,
+        blank=False,
+        null=False,
+        verbose_name='Имя'
+    )
+    last_name = models.CharField(
+        max_length=150,
+        blank=False,
+        null=False,
+        verbose_name='Фамилия'
+    )
     avatar = models.ImageField(
-        upload_to='avatars/', null=True, default='default.png')
+        upload_to='avatars/',
+        null=True,
+        default='default.png'
+    )
 
     class Meta:
         ordering = ('id',)
@@ -21,7 +39,7 @@ class ProjectUser(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
-         return self.username
+        return self.username
 
 
 User = get_user_model()
@@ -29,9 +47,17 @@ User = get_user_model()
 
 class Follow(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower', verbose_name='Подписчик')
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+        verbose_name='Подписчик'
+    )
     following = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following_user', verbose_name='Автор')
+        User,
+        on_delete=models.CASCADE,
+        related_name='following_user',
+        verbose_name='Автор'
+    )
 
     class Meta:
         constraints = (

@@ -117,19 +117,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def validate_tags(self, data):
         if not data:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 {'tags': 'Выберите один или несколько тегов!'})
 
         tags_list = []
         for tag in data:
             if tag in tags_list:
-                raise ValidationError({'tags': 'Теги не могут повторяться!'})
+                raise serializers.ValidationError(
+                    {'tags': 'Теги не могут повторяться!'})
             tags_list.append(tag)
         return data
 
     def validate_ingredients(self, data):
         if not data:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 {'tags': 'Выберите один или несколько ингредиентов!'})
 
         ingredient_ids = []
@@ -137,11 +138,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredient_id = item.get('id')
             amount = item.get('amount')
             if amount <= 0:
-                raise ValidationError({
+                raise serializers.ValidationError({
                     'amount': 'Количество ингредиентов должно быть больше 0!'
                 })
             if ingredient_id in ingredient_ids:
-                raise ValidationError({
+                raise serializers.ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
                 })
             ingredient_ids.append(ingredient_id)

@@ -1,10 +1,10 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-BASE_URL = 'http://localhost:3000'
+BASE_URL = 'http://127.0.0.1:3000/'
 
 SECRET_KEY = 'django-insecure-ha4vf((o&nhtltw2qnq+-ejo%-@tmwvct5d^c8%0aqan8be3jy'
 
@@ -89,7 +89,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
