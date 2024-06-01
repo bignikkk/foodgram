@@ -143,18 +143,6 @@ class RecipeIngredient(models.Model):
                              name='unique_ingredients'),
         )
 
-
-class ShortRecipeLink(models.Model):
-    recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE)
-    short_link = models.CharField(max_length=22, unique=True)
-
-    def __str__(self):
-        return f'{self.recipe.id} - {self.short_link}'
-
-    def get_short_url(self):
-        return reverse('recipe_short_link', args=[self.short_link])
-
-
 class ShoppingListItem(models.Model):
     user = models.ForeignKey(
         User,
