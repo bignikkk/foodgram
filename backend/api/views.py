@@ -2,6 +2,8 @@ import hashlib
 
 from django.utils.timezone import now
 from django.shortcuts import redirect, get_object_or_404
+from django.views.decorators.http import require_http_methods
+from django.utils.decorators import method_decorator
 from rest_framework.decorators import action
 from rest_framework import viewsets, status
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -31,13 +33,15 @@ from .permission import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 
 
-class TagViewSet(ReadOnlyModelViewSet):
+@method_decorator(require_http_methods(["GET", "HEAD", "OPTIONS"]), name='dispatch')
+class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminOrReadOnly,)
 
 
-class IngredientViewSet(ReadOnlyModelViewSet):
+@method_decorator(require_http_methods(["GET", "HEAD", "OPTIONS"]), name='dispatch')
+class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
