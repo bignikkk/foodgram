@@ -3,26 +3,31 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db.models import UniqueConstraint
 
+from recipes.constants import (
+    AUTHOR_LENGTH,
+    DEFAULT_LENGTH,
+)
+
 
 class ProjectUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     email = models.EmailField(
-        max_length=254,
+        max_length=AUTHOR_LENGTH,
         blank=False,
         null=False,
         unique=True,
         verbose_name='Электронная почта'
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=DEFAULT_LENGTH,
         blank=False,
         null=False,
         verbose_name='Имя'
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=DEFAULT_LENGTH,
         blank=False,
         null=False,
         verbose_name='Фамилия'

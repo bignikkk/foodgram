@@ -28,28 +28,32 @@ from .serializers import (
     RecipeCreateSerializer,
     RecipeShortSerializer
 )
-from users.pagination import ProjectPagination
 from .permission import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
+from users.pagination import ProjectPagination
+from recipes.constants import SITE_URL
 
 
-@method_decorator(require_http_methods(["GET", "HEAD", "OPTIONS"]), name='dispatch')
+@method_decorator(require_http_methods(
+    ["GET", "HEAD", "OPTIONS"]),
+    name='dispatch'
+)
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminOrReadOnly,)
 
 
-@method_decorator(require_http_methods(["GET", "HEAD", "OPTIONS"]), name='dispatch')
+@method_decorator(require_http_methods(
+    ["GET", "HEAD", "OPTIONS"]),
+    name='dispatch'
+)
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
-
-
-SITE_URL = 'http://localhost:8000'
 
 
 def generate_short_link(recipe_id):

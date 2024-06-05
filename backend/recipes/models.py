@@ -1,18 +1,37 @@
 import hashlib
+import random
 
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import UniqueConstraint
+from django.core.validators import MinValueValidator
+
+from .constants import (
+    AUTHOR_LENGTH,
+    DEFAULT_LENGTH,
+    UNIT_LENGTH,
+    LINK_LENGTH
+)
 
 
 User = get_user_model()
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=150, unique=True,
-                            blank=False, null=False, verbose_name='Название')
-    slug = models.SlugField(max_length=150, unique=True,
-                            blank=False, null=False, verbose_name='Слаг')
+    name = models.CharField(
+        max_length=DEFAULT_LENGTH,
+        unique=True,
+        blank=False,
+        null=False,
+        verbose_name='Название'
+    )
+    slug = models.SlugField(
+        max_length=DEFAULT_LENGTH,
+        unique=True,
+        blank=False,
+        null=False,
+        verbose_name='Слаг'
+    )
 
     class Meta:
         verbose_name = 'Тег'
@@ -23,10 +42,14 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=150, blank=False,
-                            null=False, verbose_name='Название')
+    name = models.CharField(
+        max_length=DEFAULT_LENGTH,
+        blank=False,
+        null=False,
+        verbose_name='Название'
+    )
     measurement_unit = models.CharField(
-        max_length=50,
+        max_length=UNIT_LENGTH,
         blank=False,
         null=False,
         verbose_name='Единица измерения'
@@ -53,7 +76,7 @@ class Recipe(models.Model):
         verbose_name='Aвтор'
     )
     name = models.CharField(
-        max_length=254,
+        max_length=AUTHOR_LENGTH,
         blank=False,
         null=False,
         verbose_name='Название'
@@ -82,12 +105,11 @@ class Recipe(models.Model):
         verbose_name='Теги'
     )
     cooking_time = models.PositiveIntegerField(
-        blank=False,
-        null=False,
-        verbose_name='Время приготовления'
+        'Время приготовления',
+        validators=[MinValueValidator(1, message='Минимум 1 минута!')]
     )
     short_link = models.CharField(
-        max_length=8,
+        max_length=LINK_LENGTH,
         unique=True,
         blank=True,
         null=True
@@ -104,8 +126,15 @@ class Recipe(models.Model):
         super().save(*args, **kwargs)
 
     def generate_short_link(self):
-        hash_object = hashlib.md5(str(self.id).encode())
+        random_number = random.randint(0, 10000)
+        hash_object = hashlib.md5(str(random_number).encode())
         return hash_object.hexdigest()[:3]
+
+    def validate_unique_short_link(self):
+        short_link = self.generate_short_link()
+        while Recipe.objects.filter(short_link=short_link).exists():
+            short_link = self.generate_short_link()
+        return short_link
 
     def __str__(self):
         return self.name
@@ -129,6 +158,7 @@ class RecipeIngredient(models.Model):
     amount = models.DecimalField(
         max_digits=6,
         decimal_places=2,
+        validators=[MinValueValidator(1, message='Минимум 1!')],
         blank=False,
         null=False,
         verbose_name='Кол-во'
@@ -141,6 +171,7 @@ class RecipeIngredient(models.Model):
             UniqueConstraint(fields=('recipe', 'ingredient'),
                              name='unique_ingredients'),
         )
+
 
 class ShoppingListItem(models.Model):
     user = models.ForeignKey(
