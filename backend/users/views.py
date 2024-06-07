@@ -26,14 +26,14 @@ class ProjectUserViewSet(DjoserUserViewSet):
         return User.objects.all()
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create']:
-            return [AllowAny()]
+        if self.action in ('list', 'retrieve', 'create'):
+            return (AllowAny(),)
         return (CurrentUserOrAdminOrReadOnly(), IsAuthenticated())
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        methods=('post', 'delete'),
+        permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, **kwargs):
         user = request.user
@@ -47,14 +47,20 @@ class ProjectUserViewSet(DjoserUserViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            subscription = get_object_or_404(
-                Follow, user=user, following=author)
-            subscription.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            subscription = Follow.objects.filter(
+                user=user, following=author).first()
+            if subscription:
+                subscription.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(
+                    {'detail': 'Такого подписчика не существует.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
     @action(
         detail=False,
-        permission_classes=[IsAuthenticated]
+        permission_classes=(IsAuthenticated,)
     )
     def subscriptions(self, request):
         user = request.user
@@ -66,8 +72,8 @@ class ProjectUserViewSet(DjoserUserViewSet):
 
     @action(
         detail=False,
-        methods=['put', 'delete'],
-        permission_classes=[IsAuthenticated],
+        methods=('put', 'delete'),
+        permission_classes=(IsAuthenticated,),
         url_path='me/avatar'
     )
     def avatar(self, request):

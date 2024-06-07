@@ -35,7 +35,7 @@ from recipes.constants import SITE_URL
 
 
 @method_decorator(require_http_methods(
-    ["GET", "HEAD", "OPTIONS"]),
+    ('GET', 'HEAD', 'OPTIONS')),
     name='dispatch'
 )
 class TagViewSet(viewsets.ModelViewSet):
@@ -45,7 +45,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 @method_decorator(require_http_methods(
-    ["GET", "HEAD", "OPTIONS"]),
+    ('GET', 'HEAD', 'OPTIONS')),
     name='dispatch'
 )
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -79,8 +79,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        methods=('post', 'delete'),
+        permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
         user = request.user
@@ -111,8 +111,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        methods=('post', 'delete'),
+        permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
         user = request.user
@@ -142,8 +142,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({'errors': 'Рецепт уже был удален!'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'],
-            permission_classes=[IsAuthenticated],
+    @action(detail=False, methods=('get',),
+            permission_classes=(IsAuthenticated,),
             url_path='download_shopping_cart')
     def download_shopping_cart(self, request):
         user = request.user
@@ -178,8 +178,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
     @action(detail=True,
-            methods=['get'],
-            permission_classes=[AllowAny],
+            methods=('get',),
+            permission_classes=(AllowAny,),
             url_path='get-link')
     def get_link(self, request, pk=None):
         try:
@@ -195,12 +195,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False,
-            methods=['get'],
-            permission_classes=[AllowAny],
+            methods=('get',),
+            permission_classes=(AllowAny,),
             url_path='s/(?P<short_hash>[^/.]+)')
     def redirect_to_recipe(self, request, short_hash=None):
         try:
             recipe = get_object_or_404(Recipe, short_link=short_hash)
-            return redirect(f'http://localhost:3000/recipes/{recipe.pk}/')
+            return redirect(f'{SITE_URL}/recipes/{recipe.pk}/')
         except Recipe.DoesNotExist:
             return HttpResponse(status=404)

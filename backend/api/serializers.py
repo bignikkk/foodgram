@@ -94,6 +94,12 @@ class RecipeShowSerializer(serializers.ModelSerializer):
             return False
         return user.shopping_list_items.filter(recipe=obj).exists()
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if not isinstance(representation.get('image'), str):
+            representation['image'] = ''
+        return representation
+
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
@@ -148,15 +154,27 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredient_ids.append(ingredient_id)
         return data
 
+    def validate_image(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Изображение обязательно для загрузки рецепта.')
+        return value
+
     @atomic
     def create_ingredients(self, ingredients, recipe):
-        RecipeIngredient.objects.bulk_create(
-            [RecipeIngredient(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
+        recipe_ingredients = []
+        for ingredient in ingredients:
+            try:
+                ingredient_obj = Ingredient.objects.get(id=ingredient['id'])
+            except Ingredient.DoesNotExist:
+                raise ValidationError(
+                    {'ingredient': 'Такого ингредиента не существует!'})
+            recipe_ingredients.append(RecipeIngredient(
+                ingredient=ingredient_obj,
                 recipe=recipe,
                 amount=ingredient['amount']
-            )for ingredient in ingredients]
-        )
+            ))
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
     @atomic
     def create(self, validated_data):
@@ -169,11 +187,20 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @atomic
     def update(self, instance, validated_data):
+        if 'ingredients' not in validated_data:
+            raise ValidationError(
+                'Ингредиенты обязательны для обновления рецепта!')
+        if 'tags' not in validated_data:
+            raise ValidationError('Теги обязательны для обновления рецепта!')
+
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+
         instance.tags.clear()
         RecipeIngredient.objects.filter(recipe=instance).delete()
-        instance.tags.set(validated_data.pop('tags'))
-        ingredients = validated_data.pop('ingredients')
+        instance.tags.set(tags)
         self.create_ingredients(ingredients, instance)
+
         return super().update(instance, validated_data)
 
     @atomic

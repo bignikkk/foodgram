@@ -155,12 +155,8 @@ class RecipeIngredient(models.Model):
         null=False,
         verbose_name='Ингредиенты'
     )
-    amount = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
+    amount = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1, message='Минимум 1!')],
-        blank=False,
-        null=False,
         verbose_name='Кол-во'
     )
 

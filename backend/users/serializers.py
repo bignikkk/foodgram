@@ -23,3 +23,15 @@ class ProjectUserSerializer(serializers.ModelSerializer):
                 following=obj
             ).exists()
         return False
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                'Пользовaтель с такой почтой уже существует!')
+        return value
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким именем уже существует!')
+        return value
