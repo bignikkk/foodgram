@@ -1,35 +1,39 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.db.models import UniqueConstraint
 
 from recipes.constants import (
-    AUTHOR_LENGTH,
+    EMAIL_LENGTH,
     DEFAULT_LENGTH,
 )
 
 
-class ProjectUser(AbstractUser):
+class User(AbstractUser):
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     email = models.EmailField(
-        max_length=AUTHOR_LENGTH,
-        blank=False,
-        null=False,
+        max_length=EMAIL_LENGTH,
         unique=True,
         verbose_name='Электронная почта'
     )
+    username = models.CharField(
+        max_length=DEFAULT_LENGTH,
+        unique=True,
+        verbose_name='Никнейм пользователя',
+        validators=[RegexValidator(
+            regex=r'^[\w.@+-]+$',
+            message='Доступные символы @/./+/-/_',
+        )]
+    )
     first_name = models.CharField(
         max_length=DEFAULT_LENGTH,
-        blank=False,
-        null=False,
         verbose_name='Имя'
     )
     last_name = models.CharField(
         max_length=DEFAULT_LENGTH,
-        blank=False,
-        null=False,
         verbose_name='Фамилия'
     )
     avatar = models.ImageField(
@@ -39,7 +43,7 @@ class ProjectUser(AbstractUser):
     )
 
     class Meta:
-        ordering = ('id',)
+        ordering = ('first_name', 'last_name')
         verbose_name = 'Пользовaтель'
         verbose_name_plural = 'Пользователи'
 
@@ -47,20 +51,17 @@ class ProjectUser(AbstractUser):
         return self.username
 
 
-User = get_user_model()
-
-
 class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower',
+        related_name='followers',
         verbose_name='Подписчик'
     )
     following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='following_user',
+        related_name='followings',
         verbose_name='Автор'
     )
 
@@ -72,3 +73,11 @@ class Follow(models.Model):
         ordering = ('-id',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+
+    def save(self, *args, **kwargs):
+        if self.user == self.following:
+            raise ValidationError('Нельзя подписаться на самого себя.')
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.following}'

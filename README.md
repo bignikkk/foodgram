@@ -5,7 +5,7 @@ FOODGRAM - это веб-сайт, на котором пользователи 
 
 ### Статус CI/CD:
 
-[![CI/CD Status](https://github.com/bignikkk/kittygram_final/actions/workflows/main.yml/badge.svg)](https://github.com/bignikkk/kittygram_final/actions/workflows/main.yml) ПОМЕНЯТЬ!
+[![CI/CD Status](https://github.com/bignikkk/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/bignikkk/foodgram/actions/workflows/main.yml) ПОМЕНЯТЬ!
 
 ### Автор:
 Автор: Nikita Blokhin
