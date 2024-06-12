@@ -23,7 +23,11 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f'Импортируем {filename}'))
             with open(filename, encoding='utf-8') as file:
                 reader = csv.DictReader(file)
-                next_id = model.objects.last().id + 1 if model.objects.exists() else 1
+                next_id = (
+                    model.objects.last().id + 1
+                    if model.objects.exists()
+                    else 1
+                )
                 for row in reader:
                     obj, created = model.objects.update_or_create(
                         defaults=row,
