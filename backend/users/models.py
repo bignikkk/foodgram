@@ -23,10 +23,12 @@ class User(AbstractUser):
         max_length=DEFAULT_LENGTH,
         unique=True,
         verbose_name='Никнейм пользователя',
-        validators=[RegexValidator(
-            regex=r'^[\w.@+-]+$',
-            message='Доступные символы @/./+/-/_',
-        )]
+        validators=(
+            RegexValidator(
+                regex=r'^[\w.@+-]+$',
+                message='Доступные символы @/./+/-/_',
+            ),
+        )
     )
     first_name = models.CharField(
         max_length=DEFAULT_LENGTH,
@@ -70,7 +72,6 @@ class Follow(models.Model):
             UniqueConstraint(fields=('user', 'following'),
                              name='unique_followings'),
         )
-        ordering = ('-id',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 

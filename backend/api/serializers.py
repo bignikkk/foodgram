@@ -2,7 +2,6 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from django.db.models import F
 from django.db.transaction import atomic
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 from users.models import User, Follow
 from recipes.models import (
@@ -13,10 +12,7 @@ from recipes.models import (
     ShoppingListItem,
     RecipeIngredient
 )
-from recipes.constants import (
-    AMOUNT_MIN,
-    AMOUNT_MAX
-)
+from recipes.constants import AMOUNT_MIN
 from .fields import Base64ImageField
 
 
@@ -46,19 +42,14 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return (
             request.user.is_authenticated
-            and Follow.objects.filter(
-                user=request.user, following=obj
-            ).exists()
+            and request.user.followings.filter(following=obj).exists()
         )
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(
-        validators=(
-            MinValueValidator(AMOUNT_MIN),
-            MaxValueValidator(AMOUNT_MAX)
-        )
+        min_value=AMOUNT_MIN,
     )
 
     class Meta:
@@ -142,10 +133,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         allow_empty_file=False
     )
     cooking_time = serializers.IntegerField(
-        validators=(
-            MinValueValidator(AMOUNT_MIN),
-            MaxValueValidator(AMOUNT_MAX)
-        )
+        min_value=AMOUNT_MIN,
     )
 
     class Meta:
@@ -247,7 +235,7 @@ class FollowShowSerializer(UserSerializer):
         )
 
     def get_recipes(self, obj):
-        request = self.context.get('request')
+        request = self.context['request']
         limit = request.query_params.get('recipes_limit')
         recipes = obj.recipes.all()
         if limit:
@@ -255,9 +243,9 @@ class FollowShowSerializer(UserSerializer):
                 recipes = recipes[:int(limit)]
             except ValueError:
                 pass
-        serializer = RecipeShortSerializer(
-            recipes, many=True, context=self.context)
-        return serializer.data
+        return RecipeShortSerializer(
+            recipes, many=True, context=self.context
+        ).data
 
 
 class FollowCreateSerializer(serializers.ModelSerializer):
@@ -270,7 +258,7 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         user = data['user']
         following = data['following']
 
-        if Follow.objects.filter(user=user, following=following).exists():
+        if user.followings.filter(following=following).exists():
             raise serializers.ValidationError(
                 'Вы уже подписаны на этого пользователя!'
             )
@@ -286,43 +274,35 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         ).data
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
+class BaseRecipeRelationSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        user = data['user']
+        recipe = data['recipe']
+
+        if self.Meta.model.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError(
+                f'Рецепт уже добавлен в {self.Meta.model._meta.verbose_name}!')
+        return data
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe, context=self.context
+        ).data
+
+
+class FavoriteSerializer(BaseRecipeRelationSerializer):
 
     class Meta:
         model = Favorite
         fields = ('user', 'recipe',)
 
-    def validate(self, data):
-        user = data['user']
-        recipe = data['recipe']
-        if Favorite.objects.filter(user=user, recipe=recipe).exists():
-            raise serializers.ValidationError(
-                'Рецепт уже добавлен в избранное!')
-        return data
 
-    def to_representation(self, instance):
-        return RecipeShortSerializer(
-            instance.recipe, context=self.context
-        ).data
-
-
-class ShoppingListItemSerializer(serializers.ModelSerializer):
+class ShoppingListItemSerializer(BaseRecipeRelationSerializer):
 
     class Meta:
         model = ShoppingListItem
         fields = ('user', 'recipe',)
-
-    def validate(self, data):
-        user = data['user']
-        recipe = data['recipe']
-        if ShoppingListItem.objects.filter(user=user, recipe=recipe).exists():
-            raise serializers.ValidationError('Рецепт уже добавлен в корзину!')
-        return data
-
-    def to_representation(self, instance):
-        return RecipeShortSerializer(
-            instance.recipe, context=self.context
-        ).data
 
 
 class AvatarSerializer(serializers.ModelSerializer):

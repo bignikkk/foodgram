@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 
 from users.models import User
 
@@ -19,6 +20,11 @@ class BaseRecipeRelationModel(models.Model):
 
     class Meta:
         abstract = True
+        constraints = [
+            UniqueConstraint(fields=('user', 'recipe'),
+                             name='unique_%(class)s_user_recipe')
+        ]
 
     def __str__(self):
-        return f'{self.user} добавил "{self.recipe}"'
+        return (f'{self.user} добавил "{self.recipe}" '
+                f'в {self._meta.verbose_name}')

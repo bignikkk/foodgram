@@ -1,20 +1,17 @@
 from django.db import models
 from django.db.models import UniqueConstraint
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
+
 from .constants import (
     EMAIL_LENGTH,
     DEFAULT_LENGTH,
     UNIT_LENGTH,
     LINK_LENGTH,
-    COOKING_MIN,
-    COOKING_MAX,
     AMOUNT_MIN,
-    AMOUNT_MAX
 )
-
+from .services import get_unique_short_link
 from users.models import User
 from core.models import BaseRecipeRelationModel
-from .services import generate_short_link
 
 
 class Tag(models.Model):
@@ -88,12 +85,10 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Теги'
     )
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
-        validators=[MinValueValidator(COOKING_MIN,
-                                      message=f'Минимум {COOKING_MIN}!'),
-                    MaxValueValidator(COOKING_MAX,
-                                      message=f'Максимум {COOKING_MAX}!')]
+        validators=(MinValueValidator(
+            AMOUNT_MIN, message=f'Минимум {AMOUNT_MIN}!'),)
     )
     short_link = models.CharField(
         max_length=LINK_LENGTH,
@@ -114,10 +109,7 @@ class Recipe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.short_link:
-            short_link = generate_short_link()
-            while Recipe.objects.filter(short_link=short_link).exists():
-                short_link = generate_short_link()
-            self.short_link = short_link
+            self.short_link = get_unique_short_link(Recipe)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -137,11 +129,9 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиенты'
     )
     amount = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(AMOUNT_MIN,
-                                      message=f'Минимум {AMOUNT_MIN}!'),
-                    MaxValueValidator(AMOUNT_MAX,
-                                      message=f'Максимум {AMOUNT_MAX}!')],
-        verbose_name='Кол-во'
+        'Кол-во',
+        validators=(MinValueValidator(
+            AMOUNT_MIN, message=f'Минимум {AMOUNT_MIN}!'),)
     )
 
     class Meta:
@@ -157,26 +147,14 @@ class RecipeIngredient(models.Model):
 
 
 class ShoppingListItem(BaseRecipeRelationModel):
-    class Meta:
+
+    class Meta(BaseRecipeRelationModel.Meta):
         verbose_name = 'Корзина покупок'
         verbose_name_plural = 'Корзины покупок'
-        constraints = (
-            UniqueConstraint(fields=('user', 'recipe'),
-                             name='unique_shopping_list_items'),
-        )
-
-    def __str__(self):
-        return f'{self.user} добавил "{self.recipe}" в корзину покупок'
 
 
 class Favorite(BaseRecipeRelationModel):
-    class Meta:
+
+    class Meta(BaseRecipeRelationModel.Meta):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
-        constraints = (
-            UniqueConstraint(fields=('user', 'recipe'),
-                             name='unique_favorite_recipes'),
-        )
-
-    def __str__(self):
-        return f'{self.user} добавил "{self.recipe}" в избранное'

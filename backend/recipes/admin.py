@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.admin import display
-from django.core.exceptions import ValidationError
 from django.forms.models import BaseInlineFormSet
 
 from .models import (
@@ -13,21 +12,10 @@ from .models import (
 )
 
 
-class RecipeIngredientInlineFormSet(BaseInlineFormSet):
-    def clean(self):
-        super().clean()
-        if any(self.errors):
-            return
-        ingredients = [
-            form.cleaned_data for form in self.forms if form.cleaned_data]
-        if not ingredients:
-            raise ValidationError(
-                'Рецепт должен содержать хотя бы один ингредиент.')
-
-
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
-    formset = RecipeIngredientInlineFormSet
+    formset = BaseInlineFormSet
+    min_num = 1
     extra = 1
 
 
