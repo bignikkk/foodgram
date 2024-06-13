@@ -43,6 +43,8 @@ services:
       - 8000:80
     networks:
       - foodgram-network
+    depends_on:
+      - backend
 
 networks:
   foodgram-network:

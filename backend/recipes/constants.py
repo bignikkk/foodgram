@@ -3,4 +3,5 @@ DEFAULT_LENGTH = 150
 UNIT_LENGTH = 50
 LINK_LENGTH = 8
 AMOUNT_MIN = 1
+AMOUNT_MAX = 32767
 SITE_URL = 'https://foodgraming.ddnsking.com'

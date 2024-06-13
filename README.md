@@ -2,11 +2,11 @@
 
 FOODGRAM - это веб-сайт, на котором пользователи могут публиковать свои рецепты, добавлять чужие рецепты в избранное и подписываться на публикации других авторов. Зарегистрированным пользователям также доступен сервис «Список покупок», позволяющий создавать список продуктов, которые необходимо купить для приготовления выбранных блюд.
 
+Ознакомиться с FOODGRAM можно тут: https://foodgraming.ddnsking.com
 
 ### Статус CI/CD:
 
-[![CI/CD Status](https://github.com/bignikkk/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/bignikkk/foodgram/actions/workflows/main.yml) ПОМЕНЯТЬ!
-
+[![CI/CD Status](https://github.com/bignikkk/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/bignikkk/foodgram/actions/workflows/main.yml) 
 ### Автор:
 Автор: Nikita Blokhin
 GitHub: github.com/bignikkk

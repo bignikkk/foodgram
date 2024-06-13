@@ -12,7 +12,10 @@ from recipes.models import (
     ShoppingListItem,
     RecipeIngredient
 )
-from recipes.constants import AMOUNT_MIN
+from recipes.constants import (
+    AMOUNT_MIN,
+    AMOUNT_MAX
+)
 from .fields import Base64ImageField
 
 
@@ -42,7 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return (
             request.user.is_authenticated
-            and request.user.followings.filter(following=obj).exists()
+            and request.user.followers.filter(following=obj).exists()
         )
 
 
@@ -50,6 +53,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(
         min_value=AMOUNT_MIN,
+        max_value=AMOUNT_MAX
     )
 
     class Meta:
@@ -134,6 +138,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     )
     cooking_time = serializers.IntegerField(
         min_value=AMOUNT_MIN,
+        max_value=AMOUNT_MAX
     )
 
     class Meta:

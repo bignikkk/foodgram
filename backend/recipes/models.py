@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import UniqueConstraint
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from .constants import (
     EMAIL_LENGTH,
@@ -8,6 +8,7 @@ from .constants import (
     UNIT_LENGTH,
     LINK_LENGTH,
     AMOUNT_MIN,
+    AMOUNT_MAX
 )
 from .services import get_unique_short_link
 from users.models import User
@@ -87,8 +88,12 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления',
-        validators=(MinValueValidator(
-            AMOUNT_MIN, message=f'Минимум {AMOUNT_MIN}!'),)
+        validators=(
+            MinValueValidator(AMOUNT_MIN,
+                              message=f'Минимум {AMOUNT_MIN}!'),
+            MaxValueValidator(AMOUNT_MAX,
+                              message=f'Максимум {AMOUNT_MAX}!')
+        )
     )
     short_link = models.CharField(
         max_length=LINK_LENGTH,
@@ -130,8 +135,12 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         'Кол-во',
-        validators=(MinValueValidator(
-            AMOUNT_MIN, message=f'Минимум {AMOUNT_MIN}!'),)
+        validators=(
+            MinValueValidator(AMOUNT_MIN,
+                              message=f'Минимум {AMOUNT_MIN}!'),
+            MaxValueValidator(AMOUNT_MAX,
+                              message=f'Максимум {AMOUNT_MAX}!')
+        )
     )
 
     class Meta:
