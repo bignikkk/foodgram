@@ -24,6 +24,7 @@ services:
       - db
     networks:
       - foodgram-network
+    platform: linux/amd64
 
   frontend:
     image: bignikkk/foodgram_frontend
@@ -33,6 +34,7 @@ services:
       - static:/frontend_static
     networks:
       - foodgram-network
+    platform: linux/amd64
 
   gateway:
     image: bignikkk/foodgram_gateway
@@ -40,13 +42,14 @@ services:
     volumes:
       - static:/staticfiles/
       - media:/app/media
-      - ./docs/:/usr/share/nginx/html/api/docs/
+      - ./docs/:/usr/share/nginx/html/api/docs
     ports:
       - 8000:80
     networks:
       - foodgram-network
     depends_on:
       - backend
+    platform: linux/amd64
 
 networks:
   foodgram-network:
